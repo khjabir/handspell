@@ -1,0 +1,41 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#F3F4F8}</style></head>
+<body><canvas id="c"></canvas>
+<script type="module">
+import { POSES } from '../src/hand3d/poses.js';
+import { drawHand, orient, SKIN } from '../src/hand3d/render.js';
+await document.fonts.load("800 60px 'Bricolage Grotesque'");
+await document.fonts.load("700 20px 'Atkinson Hyperlegible'");
+await document.fonts.load("400 19px 'Atkinson Hyperlegible'");
+const cols = 7, cw = 200, ch = 250, W = cols * cw + 60, H = 4 * ch + 150;
+const c = document.getElementById('c'), dpr = 2;
+c.width = W * dpr; c.height = H * dpr; c.style.width = W + 'px'; c.style.height = H + 'px';
+const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+ctx.fillStyle = '#F3F4F8'; ctx.fillRect(0, 0, W, H);
+ctx.fillStyle = '#24257A'; ctx.font = "800 44px 'Bricolage Grotesque'";
+ctx.fillText('The ASL alphabet', 34, 72);
+ctx.font = "400 19px 'Atkinson Hyperlegible'"; ctx.fillStyle = 'rgba(36,37,122,0.72)';
+ctx.fillText('Right hand, as seen by the person you are signing to. J and Z are drawn in the air.', 36, 104);
+const skin = { ...SKIN.medium, line: '#24257A' };
+Object.keys(POSES).forEach((l, i) => {
+  const col = i % cols, row = Math.floor(i / cols);
+  const x = 30 + col * cw + cw / 2, y = 150 + row * ch;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath(); ctx.roundRect(x - cw / 2 + 8, y, cw - 16, ch - 16, 20); ctx.fill();
+  const p = POSES[l];
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(x - cw / 2 + 8, y, cw - 16, ch - 16, 20); ctx.clip();
+  drawHand(ctx, orient(p.pts, p.view), { x, y: y + 118, scale: 54, skin });
+  ctx.restore();
+  ctx.font = "800 46px 'Bricolage Grotesque'"; ctx.textAlign = 'left';
+  ctx.fillStyle = '#FF48B0'; ctx.fillText(l, x - cw / 2 + 26 + 2.5, y + 52 + 2);
+  ctx.fillStyle = '#24257A'; ctx.fillText(l, x - cw / 2 + 26, y + 52);
+  if (p.view && (l === 'J' || l === 'Z')) {
+    ctx.font = "700 15px 'Atkinson Hyperlegible'"; ctx.fillStyle = '#C21A7A'; ctx.textAlign = 'left';
+    ctx.fillText(l === 'J' ? 'then draw a J' : 'then draw a Z', x - cw / 2 + 26, y + ch - 36);
+  }
+});
+window.done = true;
+</script></body></html>

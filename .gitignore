@@ -1,0 +1,6 @@
+# Landmark data for the tuning tools (download it yourself, see the README)
+tools/data/
+node_modules/
+.DS_Store
+.vercel
+__pycache__/

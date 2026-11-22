@@ -1,0 +1,49 @@
+<!doctype html>
+<!-- Draws the ISL alphabet chart in docs/images/isl-alphabet.png with the app's own reference
+     drawing. Open over a local server (npm start, then /tools/isl-chart.html) and screenshot it. -->
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#F3F4F8}#work{position:absolute;left:-9999px;top:0}#work canvas{width:184px;height:200px;display:block}</style></head>
+<body><canvas id="c"></canvas><div id="work"></div>
+<script type="module">
+import { HandStage } from '../src/hand3d/stage.js';
+import { ISL_LETTERS } from '../src/sign/isl/letters.js';
+await document.fonts.load("800 60px 'Bricolage Grotesque'");
+await document.fonts.load("700 20px 'Atkinson Hyperlegible'");
+await document.fonts.load("400 19px 'Atkinson Hyperlegible'");
+const cols = 7, cw = 200, ch = 250, W = cols * cw + 60, H = 4 * ch + 150;
+const c = document.getElementById('c'), dpr = 2;
+c.width = W * dpr; c.height = H * dpr; c.style.width = W + 'px'; c.style.height = H + 'px';
+const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+ctx.fillStyle = '#F3F4F8'; ctx.fillRect(0, 0, W, H);
+ctx.fillStyle = '#24257A'; ctx.font = "800 44px 'Bricolage Grotesque'";
+ctx.fillText('The ISL alphabet', 34, 72);
+ctx.font = "400 19px 'Atkinson Hyperlegible'"; ctx.fillStyle = 'rgba(36,37,122,0.72)';
+ctx.fillText('As seen by the person you are signing to. Most letters use both hands, and either hand can lead.', 36, 104);
+const work = document.getElementById('work');
+Object.keys(ISL_LETTERS).forEach((l, i) => {
+  const col = i % cols, row = Math.floor(i / cols);
+  const x = 30 + col * cw + cw / 2, y = 150 + row * ch;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath(); ctx.roundRect(x - cw / 2 + 8, y, cw - 16, ch - 16, 20); ctx.fill();
+  const cv = document.createElement('canvas');
+  work.append(cv);
+  const stage = new HandStage(cv, { alphabet: 'isl', mirror: false, reduceMotion: true, skin: 'medium', ink: '#24257A' });
+  stage.resize();
+  stage.show(l, 0.001);
+  stage.draw(performance.now() / 1000 + 1);
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(x - cw / 2 + 8, y, cw - 16, ch - 16, 20); ctx.clip();
+  ctx.drawImage(cv, x - 92, y + 26, 184, 200);
+  ctx.restore();
+  ctx.font = "800 46px 'Bricolage Grotesque'"; ctx.textAlign = 'left';
+  ctx.fillStyle = '#FF48B0'; ctx.fillText(l, x - cw / 2 + 26 + 2.5, y + 52 + 2);
+  ctx.fillStyle = '#24257A'; ctx.fillText(l, x - cw / 2 + 26, y + 52);
+  if (ISL_LETTERS[l].move) {
+    ctx.font = "700 15px 'Atkinson Hyperlegible'"; ctx.fillStyle = '#C21A7A'; ctx.textAlign = 'right';
+    ctx.fillText(ISL_LETTERS[l].move === 'brush' ? 'with a brush' : 'traced', x + cw / 2 - 24, y + 46);
+    ctx.textAlign = 'left';
+  }
+});
+window.done = true;
+</script></body></html>

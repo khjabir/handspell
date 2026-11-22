@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Handspell: learn the ASL alphabet with your webcam</title>
+  <meta name="description" content="Learn to fingerspell the American (ASL) or Indian (ISL) Sign Language alphabet. Your webcam checks your handshapes as you sign; everything runs in your browser.">
+  <meta name="theme-color" content="#F3F4F8">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2324257A'/%3E%3Ctext x='35' y='47' font-family='Arial Black,Arial' font-weight='900' font-size='40' text-anchor='middle' fill='%23FF48B0'%3EA%3C/text%3E%3Ctext x='31' y='44' font-family='Arial Black,Arial' font-weight='900' font-size='40' text-anchor='middle' fill='%23F3F4F8'%3EA%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="mode-learn">
+  <a class="skip" href="#main">Skip to the lesson</a>
+
+  <header class="top">
+    <a class="brand" href="./" aria-label="Handspell home">
+      <span class="brand-mark" aria-hidden="true">A</span>
+      <span class="brand-name">Handspell</span>
+    </a>
+    <nav class="modes" aria-label="Modes">
+      <button type="button" data-mode="learn" aria-pressed="true">Learn</button>
+      <button type="button" data-mode="practice" aria-pressed="false">Practice</button>
+      <button type="button" data-mode="read" aria-pressed="false">Read</button>
+      <button type="button" data-mode="game" aria-pressed="false">Game</button>
+      <button type="button" data-mode="free" aria-pressed="false">Free spell</button>
+    </nav>
+    <div class="top-right">
+      <div class="seg alpha-switch" role="group" aria-label="Alphabet">
+        <button type="button" data-alphabet="asl" aria-pressed="true" title="American Sign Language">ASL</button>
+        <button type="button" data-alphabet="isl" aria-pressed="false" title="Indian Sign Language">ISL</button>
+      </div>
+      <p class="progress-summary" id="progressSummary"></p>
+      <button type="button" class="icon-btn" id="settingsBtn" aria-label="Settings" aria-expanded="false" aria-controls="settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main" class="stage-grid">
+    <!-- Camera: shared by Learn, Practice, Game and Free spell -->
+    <section class="camera" id="cameraPane" aria-label="Your camera">
+      <video id="video" playsinline muted></video>
+      <canvas id="overlay" aria-hidden="true"></canvas>
+      <div class="cam-off" id="camOff">
+        <h2>Let your camera check your signing</h2>
+        <p>Handspell watches your hand and tells you when you have the letter right. The video never leaves this device.</p>
+        <button type="button" class="btn primary" id="camStart">Turn on camera</button>
+        <p class="cam-msg" id="camMsg" role="status"></p>
+      </div>
+      <p class="guess" id="guess" aria-hidden="true"></p>
+      <button type="button" class="cam-stop" id="camStop" hidden>Turn camera off</button>
+    </section>
+
+    <!-- Learn -->
+    <section class="panel" data-panel="learn" aria-labelledby="learnLetter">
+      <div class="lesson-head">
+        <h1 class="big-letter" id="learnLetter" aria-live="polite">A</h1>
+        <div class="lesson-text">
+          <p class="how" id="learnHow"></p>
+          <p class="tip" id="learnTip"></p>
+        </div>
+      </div>
+      <div class="hand-box">
+        <canvas class="hand" id="learnHand" tabindex="0" aria-label="Reference hand. Drag or use the arrow keys to turn it."></canvas>
+        <div class="hand-tools">
+          <button type="button" class="chip" id="learnView"></button>
+          <button type="button" class="chip" id="learnStraighten">Face front</button>
+        </div>
+      </div>
+      <div class="setup-card" id="setupCard" hidden>
+        <p><b>Teach Handspell your ISL alphabet.</b> Sign each letter once while it watches. It takes about two minutes, and your hands are recognised far better afterwards.</p>
+        <div class="setup-actions">
+          <button type="button" class="btn primary" id="setupStart">Start setup</button>
+          <button type="button" class="btn ghost" id="setupLater">Not now</button>
+        </div>
+      </div>
+      <p class="feedback" id="learnFeedback" role="status" aria-live="polite"></p>
+      <div class="hold" aria-hidden="true"><span id="learnHold"></span></div>
+      <div class="setup-bar" id="setupBar" hidden>
+        <span id="setupCount"></span>
+        <button type="button" class="btn" id="setupSkip">Skip letter</button>
+        <button type="button" class="btn ghost" id="setupStop">Stop</button>
+      </div>
+      <div class="lesson-actions">
+        <button type="button" class="btn" id="learnPrev">Previous</button>
+        <button type="button" class="btn primary" id="learnNext">Next letter</button>
+        <button type="button" class="btn ghost" id="learnTeach"></button>
+      </div>
+    </section>
+
+    <!-- Practice -->
+    <section class="panel" data-panel="practice" aria-labelledby="practiceTitle">
+      <h2 class="panel-title" id="practiceTitle">Spell the word</h2>
+      <div class="chips" id="practiceLists" role="group" aria-label="Word list"></div>
+      <p class="list-note" id="practiceNote"></p>
+      <ol class="tiles" id="practiceWord" aria-live="polite"></ol>
+      <p class="feedback" id="practiceFeedback" role="status" aria-live="polite"></p>
+      <div class="hold" aria-hidden="true"><span id="practiceHold"></span></div>
+      <div class="hint-row">
+        <canvas class="hand small" id="practiceHand" aria-hidden="true"></canvas>
+        <div>
+          <label class="switch"><input type="checkbox" id="practiceHints" checked><span>Show the handshape for each letter</span></label>
+          <dl class="stats" id="practiceStats"></dl>
+        </div>
+      </div>
+      <div class="lesson-actions">
+        <button type="button" class="btn" id="practiceSkipLetter">Skip letter</button>
+        <button type="button" class="btn primary" id="practiceNext">New word</button>
+      </div>
+    </section>
+
+    <!-- Read -->
+    <section class="panel read" data-panel="read" aria-labelledby="readTitle">
+      <canvas class="hand big" id="readHand" aria-label="A hand fingerspelling a word"></canvas>
+      <div class="read-side">
+        <h2 class="panel-title" id="readTitle">What did the hand spell?</h2>
+        <p class="list-note">Reading fingerspelling is the harder half. Watch the hand, then type the word. No camera needed.</p>
+        <div class="chips" id="readLists" role="group" aria-label="Word list"></div>
+        <div class="speed" role="group" aria-label="Speed">
+          <span class="label">Speed</span>
+          <div class="seg" id="readSpeed">
+            <button type="button" data-speed="1">Slow</button>
+            <button type="button" data-speed="1.8">Steady</button>
+            <button type="button" data-speed="3">Fluent</button>
+          </div>
+        </div>
+        <form class="answer" id="readForm" autocomplete="off">
+          <label for="readInput" class="label">Your answer</label>
+          <div class="answer-row">
+            <input id="readInput" type="text" inputmode="text" autocapitalize="characters" spellcheck="false" maxlength="20">
+            <button type="submit" class="btn primary">Check</button>
+          </div>
+        </form>
+        <p class="feedback" id="readFeedback" role="status" aria-live="polite"></p>
+        <div class="lesson-actions">
+          <button type="button" class="btn" id="readReplay">Play again</button>
+          <button type="button" class="btn" id="readReveal">Show the word</button>
+          <button type="button" class="btn primary" id="readNext">Next word</button>
+        </div>
+        <dl class="stats" id="readStats"></dl>
+      </div>
+    </section>
+
+    <!-- Game -->
+    <section class="panel game" data-panel="game" aria-labelledby="gameTitle">
+      <h2 class="panel-title" id="gameTitle">Letter rain</h2>
+      <p class="list-note">Letters fall down your camera picture. Sign the lowest one before it lands. Each one you catch speeds things up.</p>
+      <dl class="stats big" id="gameStats"></dl>
+      <div class="lesson-actions">
+        <button type="button" class="btn primary" id="gameStart">Start</button>
+      </div>
+      <label class="switch"><input type="checkbox" id="gameEasy"><span>Only letters I have learned</span></label>
+      <p class="feedback" id="gameFeedback" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- Free spell -->
+    <section class="panel" data-panel="free" aria-labelledby="freeTitle">
+      <h2 class="panel-title" id="freeTitle">Spell anything</h2>
+      <p class="list-note">Hold each letter until it appears. For a double letter, slide your hand a little to the side and hold it again. Lower your hand for a space.</p>
+      <output class="free-text" id="freeText" aria-live="polite"></output>
+      <div class="hold" aria-hidden="true"><span id="freeHold"></span></div>
+      <div class="lesson-actions">
+        <button type="button" class="btn" id="freeSpace">Space</button>
+        <button type="button" class="btn" id="freeBack">Delete</button>
+        <button type="button" class="btn" id="freeClear">Clear</button>
+        <button type="button" class="btn primary" id="freeSpeak">Say it</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="alphabet" id="alphabet" aria-label="Letters"></nav>
+
+  <aside class="settings" id="settings" hidden aria-labelledby="settingsTitle">
+    <div class="settings-head">
+      <h2 id="settingsTitle">Settings</h2>
+      <button type="button" class="icon-btn" id="settingsClose" aria-label="Close settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="settings-body" id="settingsBody"></div>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
