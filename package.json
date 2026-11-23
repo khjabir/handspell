@@ -2,7 +2,18 @@
   "name": "handspell",
   "version": "1.0.0",
   "description": "Learn the ASL or ISL fingerspelling alphabet with your webcam. Your hands are checked as you sign, a 3D hand shows every letter, and it all runs in the browser.",
-  "keywords": ["asl", "isl", "indian-sign-language", "sign-language", "fingerspelling", "hand-tracking", "mediapipe", "webcam", "accessibility", "education"],
+  "keywords": [
+    "asl",
+    "isl",
+    "indian-sign-language",
+    "sign-language",
+    "fingerspelling",
+    "hand-tracking",
+    "mediapipe",
+    "webcam",
+    "accessibility",
+    "education"
+  ],
   "author": "khjabir",
   "license": "MIT",
   "private": true,
@@ -14,5 +25,8 @@
     "poses": "node tools/poses.mjs",
     "isl": "node tools/isl-build.mjs",
     "isl-poses": "python3 tools/isl-poses.py"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
   }
 }
